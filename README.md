@@ -1,7 +1,9 @@
 Neon Lights
 ===========
 
-Screensaver for Haiku loosely based on [Jared Tarbell's work](http://www.complexification.net/gallery/machines/citytraveller/).
+Screensaver for Haiku, loosely based on [Jared Tarbell's work](http://www.complexification.net/gallery/machines/citytraveller/).
+
+![Screenshot](screenshot1.png)
 
 Why?
 ----
