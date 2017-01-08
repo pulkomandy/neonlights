@@ -28,11 +28,11 @@
 #include <stdlib.h>
 
 #include <Alignment.h>
-#include <CheckBox.h>
-#include <TextView.h>
+#include <Button.h>
 #include <LayoutBuilder.h>
 #include <Slider.h>
 #include <String.h>
+#include <StringView.h>
 #include <Window.h>
 
 #define ARRAY_SIZE(a) \
@@ -40,6 +40,12 @@
 
 static const BString kName = "Neon Lights";
 static const BString kAuthor = "Adrien Destugues";
+
+static const int32 kSpotCount = 'spot';
+static const int32 kSpotSize = 'size';
+static const int32 kTrail = 'tril';
+static const int32 kStability = 'stab';
+static const int32 kDefaults = 'dflt';
 
 extern "C" BScreenSaver*
 instantiate_screen_saver(BMessage* msg, image_id id)
@@ -55,6 +61,10 @@ NeonLights::NeonLights(BMessage* archive, image_id id)
 	fSpots = 22;
 	fParticles = 1000;
 	fSpotSize = .5;
+
+	fSpots = archive->GetInt32("spots", fSpots);
+	fParticles = archive->GetInt32("trails", fParticles);
+	fSpotSize = archive->GetFloat("size", fSpotSize);
 }
 
 
@@ -65,7 +75,62 @@ NeonLights::~NeonLights()
 
 void NeonLights::StartConfig(BView* view)
 {
-	// TODO
+	BSlider* s1;
+	BSlider* s2;
+	BSlider* s3;
+	BSlider* s4;
+
+	// Needed for live-application of changes
+	BWindow* win = view->Window();
+	if (win)
+		win->AddHandler(this);
+
+	BStringView* v1 = new BStringView("name", "Neon Lights");
+	v1->SetFont(be_bold_font);
+	BStringView* v2 = new BStringView("author", "by Adrien Destugues");
+
+	BStringView* v3 = new BStringView("spots", "Spots");
+	v3->SetFont(be_bold_font);
+	BStringView* v4 = new BStringView("particles", "Trails");
+	v4->SetFont(be_bold_font);
+
+	s1 = new BSlider("spots", "", new BMessage(kSpotCount), 5, 64, B_HORIZONTAL);
+	s1->SetValue(fSpots);
+	s1->SetTarget(this);
+	s1->SetLimitLabels("few", "many");
+
+	s2 = new BSlider("size", "", new BMessage(kSpotSize), 10, 500, B_HORIZONTAL);
+	s2->SetValue(fSpotSize * 100);
+	s2->SetTarget(this);
+	s2->SetLimitLabels("thin", "thick");
+
+	s3 = new BSlider("trails", "", new BMessage(kTrail), 200, 5000, B_HORIZONTAL);
+	s3->SetValue(fParticles);
+	s3->SetTarget(this);
+	s3->SetLimitLabels("dark", "colorful");
+
+	BButton* b = new BButton("defaults", "Defaults", new BMessage(kDefaults));
+	b->SetTarget(this);
+
+	BLayoutBuilder::Group<>(view, B_VERTICAL, B_USE_ITEM_SPACING)
+		.SetInsets(B_USE_WINDOW_INSETS)
+		.SetExplicitAlignment(BAlignment(B_ALIGN_HORIZONTAL_CENTER, B_ALIGN_TOP))
+		.AddGroup(B_HORIZONTAL)
+			.Add(v1)
+			.Add(v2)
+			.AddGlue()
+		.End()
+		.Add(v3)
+		.Add(s1)
+		.Add(s2)
+		.AddGlue()
+		.Add(v4)
+		.Add(s3)
+		.AddGlue()
+		.AddGroup(B_HORIZONTAL)
+			.Add(b)
+			.AddGlue()
+		.End();
 }
 
 
@@ -258,6 +323,20 @@ void NeonLights::Draw(BView* view, int32 frame)
 void NeonLights::MessageReceived(BMessage* msg)
 {
 	switch (msg->what) {
+	case kSpotCount:
+		fSpots = msg->GetInt32("be:value", fSpots);
+		break;
+	case kSpotSize:
+		fSpotSize = msg->GetInt32("be:value", fSpotSize * 100) / 100;
+		break;
+	case kTrail:
+		fParticles = msg->GetInt32("be:value", fParticles);
+		break;
+	case kDefaults:
+		fSpots = 22;
+		fSpotSize = .5;
+		fParticles = 1000;
+		break;
 	default:
 		BHandler::MessageReceived(msg);
 	}
@@ -266,6 +345,9 @@ void NeonLights::MessageReceived(BMessage* msg)
 
 status_t NeonLights::SaveState(BMessage* into) const
 {
+	into->AddInt32("spots", fSpots);
+	into->AddInt32("trails", fParticles);
+	into->AddFloat("size", fSpotSize);
 	return B_OK;
 }
 
