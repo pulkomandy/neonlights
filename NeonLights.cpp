@@ -59,7 +59,7 @@ NeonLights::NeonLights(BMessage* archive, image_id id)
 	BScreenSaver(archive, id)
 {
 	fSpots = 22;
-	fParticles = 1000;
+	fParticles = 3000;
 	fSpotSize = .5;
 
 	fSpots = archive->GetInt32("spots", fSpots);
@@ -78,7 +78,6 @@ void NeonLights::StartConfig(BView* view)
 	BSlider* s1;
 	BSlider* s2;
 	BSlider* s3;
-	BSlider* s4;
 
 	// Needed for live-application of changes
 	BWindow* win = view->Window();
@@ -142,7 +141,6 @@ status_t NeonLights::StartSaver(BView* view, bool prev)
 	fWidth = (int) rect.Width() + 1;
 	fHeight = (int) rect.Height() + 1;
 
-	view->SetDrawingMode(B_OP_ALPHA);
 	view->SetLineMode(B_ROUND_CAP, B_ROUND_JOIN);
 	view->SetFlags(view->Flags() | B_SUBPIXEL_PRECISE);
 
@@ -159,46 +157,12 @@ rgb_color somecolor() {
   // pick some random good color
 
 	static const rgb_color goodcolor[] = {
-		{ 0, 0, 255, 128 },
-		{ 0, 255, 255, 128 },
-		{ 255, 0, 255, 128 },
-		//{ 255, 255, 255, 128 },
-		//{ 128, 128, 128, 128 },
-		{ 0, 255, 0, 128 },
-		{ 255, 0, 0, 128 },
-		{ 255, 255, 0, 128 },
-#if 0
-		{ 0x00, 0x00, 0x00, 56 }, { 0x00, 0x00, 0x00, 56 },
-		{ 0x00, 0x00, 0x00, 56 }, { 0x00, 0x00, 0x00, 56 },
-		{ 0x00, 0x00, 0x00, 56 }, { 0x00, 0x00, 0x00, 56 },
-		{ 0x00, 0x00, 0x00, 56 }, { 0x00, 0x00, 0x00, 56 },
-		{ 0x00, 0x00, 0x00, 56 }, { 0x00, 0x00, 0x00, 56 },
-		{ 0x00, 0x00, 0x00, 56 }, { 0x00, 0x00, 0x00, 56 },
-		{ 0x00, 0x00, 0x00, 56 }, { 0x00, 0x00, 0x00, 56 },
-		{ 0x00, 0x00, 0x00, 56 }, { 0x00, 0x00, 0x00, 56 },
-		{ 0x00, 0x00, 0x00, 56 }, { 0x00, 0x00, 0x00, 56 },
-		{ 0x6B, 0x65, 0x56, 56 }, { 0xA0, 0x9C, 0x84, 56 },
-		{ 0x90, 0x8B, 0x7C, 56 }, { 0x79, 0x74, 0x6E, 56 },
-		{ 0x75, 0x5D, 0x35, 56 }, { 0x93, 0x73, 0x43, 56 },
-		{ 0x9c, 0x6B, 0x4B, 56 }, { 0xAB, 0x82, 0x59, 56 },
-		{ 0xAA, 0x8A, 0x61, 56 }, { 0x57, 0x83, 0x75, 56 },
-		{ 0xF0, 0xF6, 0xF2, 56 }, { 0xD0, 0xE0, 0xE5, 56 },
-		{ 0xD7, 0xE5, 0xEC, 56 }, { 0xD3, 0xDF, 0xEA, 56 },
-		{ 0xC2, 0xD7, 0xE7, 56 }, { 0xA5, 0xC6, 0xE3, 56 },
-		{ 0xA6, 0xCB, 0xE6, 56 }, { 0xAD, 0xCB, 0xE5, 56 },
-		{ 0x77, 0x83, 0x9D, 56 }, { 0xD9, 0xD9, 0xB9, 56 },
-		{ 0xA9, 0xA9, 0x78, 56 }, { 0x72, 0x7B, 0x5B, 56 },
-		{ 0x6B, 0x7C, 0x4B, 56 }, { 0x54, 0x6D, 0x3E, 56 },
-		{ 0x47, 0x47, 0x2E, 56 }, { 0x72, 0x7B, 0x52, 56 },
-		{ 0x89, 0x8A, 0x6A, 56 }, { 0x91, 0x92, 0x72, 56 },
-		{ 0xAC, 0x62, 0x3B, 56 }, { 0xCB, 0x6A, 0x33, 56 },
-		{ 0x9D, 0x5C, 0x30, 56 }, { 0x84, 0x3F, 0x2B, 56 },
-		{ 0x65, 0x2c, 0x2a, 56 }, { 0x7e, 0x37, 0x2b, 56 },
-		{ 0x40, 0x32, 0x29, 56 }, { 0x47, 0x39, 0x2b, 56 },
-		{ 0x3D, 0x26, 0x26, 56 }, { 0x36, 0x2c, 0x26, 56 },
-		{ 0x57, 0x39, 0x2c, 56 }, { 0x99, 0x8a, 0x72, 56 },
-		{ 0x86, 0x4d, 0x36, 56 }, { 0x54, 0x47, 0x32, 56 }
-#endif
+		{ 0, 0, 255, 32 },
+		{ 0, 255, 255, 32 },
+		{ 255, 0, 255, 32 },
+		{ 0, 255, 0, 32 },
+		{ 255, 0, 0, 32 },
+		{ 255, 255, 0, 32 },
 	};
 
   return goodcolor[random() % ARRAY_SIZE(goodcolor)];
@@ -242,7 +206,11 @@ void NeonLights::_Move(City* city, BView* view) {
 
 void NeonLights::_Restart(BView* view)
 {
+	fNeedsRestart = false;
+
+	view->SetDrawingMode(B_OP_COPY);
 	view->FillRect(view->Bounds(), B_SOLID_LOW);
+	view->SetDrawingMode(B_OP_ALPHA);
 
 	float tinc = 2 * M_PI / fSpots;
 
@@ -276,7 +244,7 @@ float citydistance(int a, int b) {
 
 void NeonLights::Draw(BView* view, int32 frame)
 {
-	if ((frame & 0x3FF) == 0)
+	if (fNeedsRestart || (frame & 0x3FF) == 0)
 		_Restart(view);
 
 
@@ -306,7 +274,7 @@ void NeonLights::Draw(BView* view, int32 frame)
 			dy += random() * 3.0 / RAND_MAX - 1.5;
 
 		rgb_color c = mix_color(cities[b].myc, cities[a].myc, 128);
-		c.alpha = 96;
+		//c.alpha = 20;
 		view->AddLine(BPoint(dx, dy), BPoint(dx, dy), c);
 	}
 	view->EndLineArray();
@@ -325,17 +293,21 @@ void NeonLights::MessageReceived(BMessage* msg)
 	switch (msg->what) {
 	case kSpotCount:
 		fSpots = msg->GetInt32("be:value", fSpots);
+		fNeedsRestart = true;
 		break;
 	case kSpotSize:
 		fSpotSize = msg->GetInt32("be:value", fSpotSize * 100) / 100;
+		fNeedsRestart = true;
 		break;
 	case kTrail:
 		fParticles = msg->GetInt32("be:value", fParticles);
+		fNeedsRestart = true;
 		break;
 	case kDefaults:
 		fSpots = 22;
 		fSpotSize = .5;
-		fParticles = 1000;
+		fParticles = 3000;
+		fNeedsRestart = true;
 		break;
 	default:
 		BHandler::MessageReceived(msg);

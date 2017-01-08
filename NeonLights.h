@@ -51,5 +51,7 @@ private:
 	int							fSpots;
 	int							fParticles;
 	float						fSpotSize;
+
+	bool fNeedsRestart;
 };
 
